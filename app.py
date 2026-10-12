@@ -1,31 +1,39 @@
 ﻿from flask import Flask, render_template, request
 
-from miniproject import movies, recommend_movies
+from song_recommendation import recommend_songs
 
 app = Flask(__name__)
-genres = sorted({movie["genre"] for movie in movies})
+MOODS = ("happy", "sad", "relaxed", "energetic", "romantic", "motivated")
+ACTIVITIES = ("study", "workout", "travel", "party", "relax")
+GENRES = ("any", "pop", "rock", "romance", "hip-hop", "instrumental")
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    selected_genre = ""
+    selections = {"mood": "", "activity": "", "genre": "any"}
     recommendations = []
     searched = False
 
     if request.method == "POST":
-        selected_genre = request.form.get("genre", "").strip().lower()
-        searched = True
-        if selected_genre in genres:
-            recommendations = recommend_movies(selected_genre)
+        selections = {
+            "mood": request.form.get("mood", "").strip().lower(),
+            "activity": request.form.get("activity", "").strip().lower(),
+            "genre": request.form.get("genre", "any").strip().lower(),
+        }
+        if selections["mood"] in MOODS and selections["activity"] in ACTIVITIES and selections["genre"] in GENRES:
+            recommendations = recommend_songs(**selections)[:5]
+            searched = True
 
     return render_template(
         "index.html",
-        genres=genres,
-        selected_genre=selected_genre,
+        moods=MOODS,
+        activities=ACTIVITIES,
+        genres=GENRES,
+        selections=selections,
         recommendations=recommendations,
         searched=searched,
     )
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)

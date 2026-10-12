@@ -1,0 +1,7 @@
+﻿services:
+  - type: web
+    name: soundtrack-recommender
+    runtime: python
+    rootDir: .
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
